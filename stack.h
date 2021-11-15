@@ -1,6 +1,7 @@
 #pragma once
 #include <cstddef>
 #include <cassert>
+#include <vector>
 #include <utility>
 #include <exception>
 
@@ -24,7 +25,7 @@ namespace ndb {
 			stack_node() = default;
 			template<class... _Valty>
 			stack_node(_Valty&&... _Val)
-				: value(std::forward<_Valty...>(_Val)...), next(nullptr) {}
+				: value(std::forward<_Valty>(_Val)...), next(nullptr) {}
 			stack_node(stack_node const& other) = default;
 			stack_node(stack_node&& rhs) : value(rhs.value), next(rhs.next) {
 				rhs.next = nullptr;
@@ -110,6 +111,7 @@ namespace ndb {
 		stack& emplace(_Valty&&... _Val) throw(...) {
 			return perfect_empace(std::forward<_Valty>(_Val)...);
 		}
+
 	private:
 		template<class... _Valty>
 		stack& perfect_empace(_Valty&&... _Val) throw(...) {
