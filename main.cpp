@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include "stack.h"
@@ -8,15 +9,19 @@ struct X {
 	X(X const& other) = default;
 	X(X&& other) noexcept: x(std::exchange(other.x,0)){}
 	friend std::ostream& operator << (std::ostream& os, const X& x) {
-		return os << x.x;
+		return os << "X=" << x.x;
 	}
 };
 
+template<typename Type>
+std::ostream& operator<<(std::ostream& os, std::vector<Type> const& vec) {
+	std::copy(vec.cbegin(), vec.cend(), std::ostream_iterator<Type>(os, " "));
+	return os;
+}
+
 int main() {
-	ndb::stack<X> s = { 4,5,6 };
-	s.push(1).push(2).push(3);
-	while (!s.empty()) {
-		std::cout << s.take() << " ";
-	}
-	std::cout << std::endl;
+	ndb::stack<X> s = { 1,2,3,4,5 };
+	s.push(0).push({ -1 });
+	s.emplace(-2);
+	std::cout << s.take_all();
 }
