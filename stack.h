@@ -107,6 +107,14 @@ namespace ndb {
 		std::size_t size() const {
 			return _size;
 		}
+		std::vector<ValueType> take_all() {
+			std::vector<ValueType> vec;
+			vec.reserve(_size);
+			while (!empty()) {
+				vec.push_back(std::move(take()));
+			}
+			return vec;
+		}
 		template<class... _Valty>
 		stack& emplace(_Valty&&... _Val) throw(...) {
 			return perfect_empace(std::forward<_Valty>(_Val)...);
