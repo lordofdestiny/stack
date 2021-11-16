@@ -14,95 +14,88 @@ namespace ndb {
 	template<typename Type>
 	class stack
 	{
-		template<typename structType>
-		struct stack_node {
-			using StackValueType = typename structType::ValueType;
-			using StackValuePointerType = StackValueType*;
-			using StackValueReferenceType = StackValueType&;
-		public:
-			StackValueType value;
-			stack_node* next;
-			stack_node() = default;
-			template<class... _Valty>
-			stack_node(_Valty&&... _Val)
-				: value(std::forward<_Valty>(_Val)...), next(nullptr) {}
-			stack_node(stack_node const& other) = default;
-			stack_node(stack_node&& rhs) : value(rhs.value), next(rhs.next) {
-				rhs.next = nullptr;
-			}
-		};
 	public:
 		using ValueType = Type;
 		using PointerType = Type*;
 		using ReferenceType = Type&;
-		using NodeType = stack_node<stack<ValueType>>;
+	private:
+		struct stack_node {
+			ValueType value;
+			stack_node* next;
+			stack_node() = default;
+			stack_node(stack_node const& other) = default;
+			stack_node(stack_node&& rhs)
+				: value(rhs.value),
+				next(std::exchange(rhs.next, nullptr)) {}
+		};
+		using NodeType = stack_node;
 		using NodePointerType = NodeType*;
 		using NodeReferenceType = NodeType&;
 	public:
 		stack() = default;
 		stack(std::initializer_list<ValueType> il) {
-			for (auto i = il.begin(); i != il.end(); i++) {
-				this->emplace(*i);
+			for (const auto& i : il) {
+				emplace(i);
 			}
 		}
 		stack(stack const& other)
 			: _size(other._size),
-			data(stack::copyResoruces(other.data)) {};
+			_data(stack::copyResoruces(other._data)) {};
 		stack(stack&& other) noexcept :
 			_size(std::exchange(other._size, 0)),
-			data(std::exchange(other.data, nullptr)) {}
+			_data(std::exchange(other._data, nullptr)) {}
 		virtual ~stack() {
-			stack::freeResources(this->data);
+			freeResources();
 		}
 		stack& operator=(stack const& other) {
 			if (*this != other) {
-				stack::freeResources(this->data);
-				this->_size = other._size;
-				this->data = stack::copyResoruces(other->data);
+				freeResources();
+				_size = other._size;
+				_data = stack::copyResoruces(other->_data);
 			}
 			return *this;
 		}
 		stack& operator=(stack&& other) {
 			assert((*this != other));
-			stack::freeResources(this->data);
-			this->_size = std::exchange(other._size, 0);
-			this->data = std::exchange(other.data, nullptr);
+			freeResources();
+			_size = std::exchange(other._size, 0);
+			_data = std::exchange(other._data, nullptr);
 			return *this;
 		};
 
-		ValueType take() {
-			ValueType tmp = std::move(this->data->value);
-			this->pop();
+		ValueType take() noexcept(false){
+			if (empty()) {
+				throw ndb::stack_empty_error("Error while taking from an empty stack!");
+			}
+			ValueType tmp = std::move(_data->value);
+			pop();
 			return tmp;
 		}
 
-		const ReferenceType top() const {
-			if (data == nullptr) {
+		const ReferenceType top() const noexcept(false) {
+			if (empty()) {
 				throw ndb::stack_empty_error("Error while checking the top of an empty stack!");
 			}
-			return this->data->value;
+			return _data->value;
 		}
 
-		stack& pop() throw(...) {
-			if (data == nullptr) {
+		stack& pop() noexcept(false) {
+			if (empty()) {
 				throw ndb::stack_empty_error("Error while attempting to pop an empty stack!");
 			}
-			NodePointerType keep = this->data;
-			this->data = this->data->next;
-			delete keep;
-			_size--;
+			freeTop();
 			return *this;
 		};
 
-		stack& push(const ReferenceType value) throw(...) {
-			return this->emplace(value);
+		stack& push(const ReferenceType value) noexcept(false) {
+			return emplace(value);
 		}
 
-		stack& push(ValueType&& value) throw(...) {
-			return this->emplace(std::move(value));
+		stack& push(ValueType&& value) noexcept(false) {
+			return emplace(std::move(value));
 		}
 		bool empty() const {
-			return this->data == nullptr;
+			return _data == nullptr;
 		}
 		std::size_t size() const {
 			return _size;
@@ -115,45 +108,44 @@ namespace ndb {
 			}
 			return vec;
 		}
-		template<class... _Valty>
-		stack& emplace(_Valty&&... _Val) throw(...) {
-			return perfect_empace(std::forward<_Valty>(_Val)...);
+		template<class... ValType>
+		stack& emplace(ValType&&... args) noexcept(false) {
+			return perfect_empace(std::forward<ValType>(args)...);
 		}
 
 	private:
-		template<class... _Valty>
-		stack& perfect_empace(_Valty&&... _Val) throw(...) {
-			NodePointerType node = new NodeType(std::forward<_Valty>(_Val)...);
-			node->next = this->data;
-			this->data = node;
+		NodePointerType _data = nullptr;
+		std::size_t _size = 0;
+		template<class... ValType>
+		stack& perfect_empace(ValType&&... args) noexcept(false) {
+			NodePointerType node = new NodeType();
+			new(&node->value) ValueType(std::forward<ValType>(args)...);
+			node->next = _data;
+			_data = node;
 			++_size;
 			return *this;
 		}
-		static void freeResources(NodePointerType top) {
-			while (top != nullptr) {
-				NodePointerType ptr = top->next;
-				delete top;
-				top = ptr;
+		void freeTop() {
+			NodePointerType ptr = _data;
+			_data = _data->next;
+			ptr->value.~ValueType();
+			delete ptr;
+			--_size;
+		}
+		void freeResources() {
+			while (_data != nullptr) {
+				freeTop();
 			}
 		}
 		static NodePointerType copyResoruces(NodePointerType top) {
-			NodePointerType data = nullptr;
-			NodePointerType end = nullptr;
+			NodePointerType _data = nullptr, end = nullptr;
 			while (top != nullptr) {
 				NodePointerType node = new NodeType(*top);
-				if (end == nullptr) {
-					data = node;
-				}
-				else {
-					end->next = node;
-				}
-				end = node;
+				end = (end == nullptr ? _data : end->next ) = node;
 				top = top->next;
 			}
-			return data;
+			return _data;
 		}
-		NodePointerType data = nullptr;
-		std::size_t _size = 0;
 	};
 }
 
