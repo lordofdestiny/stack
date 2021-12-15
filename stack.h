@@ -64,14 +64,11 @@ namespace ndb {
 				freeResources();
 				_size = std::exchange(other._size, 0);
 				_data = std::exchange(other._data, nullptr);
-				return *this;
 			}
+			return *this;
 		};
 
 		ValueType take() noexcept(false) {
-			if (empty()) {
-				throw ndb::stack_empty_error("Error while taking from an empty stack!");
-			}
 			ValueType tmp = std::move(_data->value);
 			pop();
 			return tmp;
