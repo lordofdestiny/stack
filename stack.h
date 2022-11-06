@@ -116,7 +116,8 @@ namespace ndb {
 			VectorType vec;
 			vec.reserve(_size);
 			while (!empty()) {
-				vec.emplace_back(take());
+				vec.emplace_back(std::move(this->_data->value));
+				removeTop();
 			}
 			return vec;
 		}
