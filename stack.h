@@ -136,9 +136,7 @@ namespace ndb {
 			return *this;
 		}
 		void removeTop() {
-			NodePointer ptr = std::exchange(_data, _data->next);
-			ptr->value.~ValueType();
-			delete ptr;
+			delete std::exchange(_data, _data->next);
 			--_size;
 		}
 		void freeResources() {
