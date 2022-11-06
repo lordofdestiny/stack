@@ -120,6 +120,7 @@ namespace ndb {
 			}
 			return vec;
 		}
+
 		template<class... ValType>
 		stack& emplace(ValType&&... args) noexcept(false) {
 			return perfect_emplace(std::forward<ValType>(args)...);
