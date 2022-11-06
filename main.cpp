@@ -13,17 +13,17 @@
 struct X {
 	double x;
 	X(double x = 0) : x(x) {
-#if CONSTUCTOR_DEBUG
+#if CONSTRUCTOR_DEBUG
 		std::cerr << "Constructed!\n";
 #endif
 	}
 	X(X const& other) : x(other.x) {
-#if CONSTUCTOR_DEBUG
+#if CONSTRUCTOR_DEBUG
 		std::cerr << "Made a copy!\n";
 #endif
 	};
 	X(X&& other) noexcept : x(std::exchange(other.x, 0)) {
-#if CONSTUCTOR_DEBUG
+#if CONSTRUCTOR_DEBUG
 		std::cerr << "Did a move!\n";
 #endif
 	}
