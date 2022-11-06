@@ -27,6 +27,11 @@ struct X {
 		std::cerr << "Did a move!\n";
 #endif
 	}
+	~X() {
+#if CONSTRUCTOR_DEBUG
+		std::cerr << "Destroyed!\n";
+#endif
+	}
 	friend std::ostream& operator << (std::ostream& os, const X& x) {
 		return os << "X=" << x.x;
 	}
