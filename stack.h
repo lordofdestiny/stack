@@ -59,7 +59,7 @@ namespace ndb {
 		}
 		stack& operator=(stack const& other) {
 			if (this != &other) {
-				NodePointer newData = other.copyResources();
+				auto newData = other.copyResources();
 				freeResources();
 				_size = other._size;
 				_data = newData;
@@ -130,8 +130,7 @@ namespace ndb {
 	private:
 		template<class... ValType>
 		stack& perfect_emplace(ValType&&... args) noexcept(false) {
-			NodePointer node =
-				new NodeType(std::forward<ValType>(args)...);
+			auto node = new NodeType(std::forward<ValType>(args)...);
 			node->next = std::exchange(_data, node);
 			++_size;
 			return *this;
