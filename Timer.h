@@ -24,13 +24,10 @@ namespace Utils {
 		std::ostream& os;
 		size_t id = s_id_counter++;
 	public:
-		Timer(std::ostream& os = std::cout)
-			: name(), start(clock::now()), os(os) {
-			os << "Timer started!\n";
-		}
+		Timer(std::ostream& os = std::cout) : Timer("Timer", os) {}
 		Timer(std::string const& name, std::ostream& os = std::cout)
 			:name(name), start(clock::now()), os(os) {
-			os << std::format("Timer {} started!\n", name);
+			os << std::format("{}({}) started!\n", name, id);
 		}
 		Timer(const Timer&) = delete;
 		Timer& operator=(const Timer&) = delete;
@@ -47,7 +44,7 @@ namespace Utils {
 				this->stopped = true;
 			}
 			bool nameNotSet = name.empty();
-			os << std::format("Timer{} ended!\n", nameNotSet ? "" : (" " + name));
+			os << std::format("{}({}) ended!\n", name, id);
 			display();
 		}
 
@@ -56,13 +53,9 @@ namespace Utils {
 		}
 
 		void display(std::ostream& os) {
-			auto const& name = this->name.empty()
-				? std::format("Timer({})", id)
-				: this->name;
-			
-			os << std::format("{} - {}{}\n", name, timeElapsed(), getTimeUnitString());
+			os << std::format("{}({}) - {}{}\n", name, id, timeElapsed(), getTimeUnitString());
 		}
-		
+
 		~Timer() {
 			if (!stopped) stop();
 		}
