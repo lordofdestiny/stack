@@ -16,25 +16,28 @@ namespace Utils {
 		using clock = std::chrono::high_resolution_clock;
 		using time_point = clock::time_point;
 		using time_duration = DurationType;
+		static inline size_t s_id_counter = 0;
 	private:
 		std::string name;
-		time_point start;
-		time_point end;
+		time_point start, end{};
 		bool stopped = false;
 		std::ostream& os;
+		size_t id = s_id_counter++;
 	public:
-		Timer(std::ostream& os = std::cout) : name(), start(clock::now()), os(os) {
+		Timer(std::ostream& os = std::cout)
+			: name(), start(clock::now()), os(os) {
 			os << "Timer started!\n";
 		}
-		Timer(std::string name, std::ostream& os = std::cout) :name(name), start(clock::now()), os(os) {
+		Timer(std::string const& name, std::ostream& os = std::cout)
+			:name(name), start(clock::now()), os(os) {
 			os << std::format("Timer {} started!\n", name);
 		}
 		Timer(const Timer&) = delete;
 		Timer& operator=(const Timer&) = delete;
 
 		auto timeElapsed() const {
-			time_point end = this->stopped ? this->end : clock::now();
-			time_duration duration = std::chrono::duration_cast<time_duration>(end - start);
+			auto end = this->stopped ? this->end : clock::now();
+			auto duration = std::chrono::duration_cast<time_duration>(end - start);
 			return duration.count();
 		}
 
@@ -43,23 +46,33 @@ namespace Utils {
 				this->end = clock::now();
 				this->stopped = true;
 			}
-		}
-
-		~Timer() {
-			stop();
-			auto duration = timeElapsed();
 			bool nameNotSet = name.empty();
 			os << std::format("Timer{} ended!\n", nameNotSet ? "" : (" " + name));
-			os << std::format("Execution took {}{}!\n", duration, getTimeUnitString());
+			display();
+		}
+
+		void display() {
+			display(this->os);
+		}
+
+		void display(std::ostream& os) {
+			auto const& name = this->name.empty()
+				? std::format("Timer({})", id)
+				: this->name;
+			
+			os << std::format("{} - {}{}\n", name, timeElapsed(), getTimeUnitString());
+		}
+		
+		~Timer() {
+			if (!stopped) stop();
 		}
 
 		friend std::ostream& operator<<(std::ostream& os, const Timer<DurationType> timer) {
-			auto duration = timer->timeElapsed();
-			os << std::format("Timer{} ended!\n", name.empty() ? "" : (" " + name));
-			os << std::format("Execution took {}{}!\n", duration, timer->getTimeUnitString());
+			display(os);
+			return os;
 		}
 
-		static consteval const char* getTimeUnitString() {
+		static const char* getTimeUnitString() {
 			if (std::is_same_v<time_duration, std::chrono::seconds>) {
 				return "s";
 			}
