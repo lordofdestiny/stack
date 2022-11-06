@@ -48,7 +48,7 @@ int main() {
 		std::stack<X> s;
 		t1.stop();
 		Timer t2("Pushing 1");
-		for (int i = 0; i < iterations; i++) s.push(i);
+		for (int i = 0; i < 1000000; i++) s.push(i);
 		t2.stop();
 		Timer t3("Poping 1 ");
 		while (!s.empty()) s.pop();
