@@ -26,9 +26,16 @@ namespace ndb {
 		struct stack_node {
 			ValueType value;
 			stack_node* next = nullptr;
-			stack_node(ConstReference value) : value(value) {}
-			stack_node(RValueReference value) : value(std::move(value)) {}
-			stack_node(stack_node const& other) = default;
+			template<class... ValType>
+			stack_node(ValType&&... args) 
+				: value(std::forward<ValType>(args)...) {}
+			stack_node(ConstReference value) 
+				: value(value) { }
+			stack_node(RValueReference value) 
+				: value(std::move(value)) {}
+
+			stack_node(stack_node const& other) 
+				: value(other.value) {}
 			stack_node(stack_node&& rhs)
 				: value(std::move(rhs.value)),
 				next(std::exchange(rhs.next, nullptr)) {}
@@ -122,7 +129,7 @@ namespace ndb {
 		template<class... ValType>
 		stack& perfect_emplace(ValType&&... args) noexcept(false) {
 			NodePointer node =
-				new NodeType(ValueType(std::forward<ValType>(args)...));
+				new NodeType(std::forward<ValType>(args)...);
 			node->next = std::exchange(_data, node);
 			++_size;
 			return *this;
