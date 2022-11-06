@@ -140,7 +140,7 @@ namespace ndb {
 			--_size;
 		}
 		void freeResources() {
-			while (_data != nullptr) removeTop();
+			while (!empty()) removeTop();
 		}
 		NodePointer copyResources() const {
 			NodePointer tmp = this->_data;
