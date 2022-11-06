@@ -143,12 +143,10 @@ namespace ndb {
 			while (!empty()) removeTop();
 		}
 		NodePointer copyResources() const {
-			NodePointer tmp = this->_data;
 			NodePointer head = nullptr, tail = nullptr;
-			while (tmp != nullptr) {
-				NodePointer node = new NodeType(*tmp);
+			for (auto tmp = this->_data; tmp != nullptr; tmp = tmp->next) {
+				auto node = new NodeType(*tmp);
 				tail = (tail == nullptr ? head : tail->next) = node;
-				tmp = tmp->next;
 			}
 			return head;
 		}
