@@ -145,6 +145,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="stack.h" />
+    <ClInclude Include="StackTester.h" />
     <ClInclude Include="Timer.h" />
   </ItemGroup>
   <ItemGroup>
