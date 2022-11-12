@@ -115,17 +115,12 @@ namespace ndb {
 
 		template<class... ValType>
 		stack& emplace(ValType&&... args) noexcept(false) {
-			return perfect_emplace(std::forward<ValType>(args)...);
-		}
-
-	private:
-		template<class... ValType>
-		stack& perfect_emplace(ValType&&... args) noexcept(false) {
 			auto node = new NodeType(std::forward<ValType>(args)...);
 			node->next = std::exchange(_data, node);
 			++_size;
 			return *this;
 		}
+	private:
 		void removeTop() {
 			delete std::exchange(_data, _data->next);
 			--_size;
