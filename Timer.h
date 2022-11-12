@@ -6,7 +6,7 @@
 
 namespace Utils {
 	template<class T, typename... REST>
-	struct is_any_of {Re
+	struct is_any_of {
 		static const bool value = (... || std::is_same_v<T, REST>);
 	};
 
