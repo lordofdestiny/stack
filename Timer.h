@@ -7,7 +7,7 @@
 namespace Utils {
 	template<class T, typename... REST>
 	struct is_any_of {
-		static const bool value = (... || std::is_same_v<T, REST>);
+		static const inline bool value = (... || std::is_same_v<T, REST>);
 	};
 
 	template<class T, typename... REST>
@@ -20,16 +20,11 @@ namespace Utils {
 		std::chrono::microseconds,
 		std::chrono::nanoseconds>;
 
-	template<typename T>
-	static constexpr auto TimeTypeUnit = "Unknown";
-	template<>
-	static constexpr auto TimeTypeUnit< std::chrono::seconds> = "s";
-	template<>
-	static constexpr auto TimeTypeUnit< std::chrono::milliseconds> = "ms";
-	template<>
-	static constexpr auto TimeTypeUnit< std::chrono::microseconds> = "us";
-	template<>
-	static constexpr auto TimeTypeUnit< std::chrono::nanoseconds> = "ns";
+	template<typename T> static constexpr auto TimeTypeUnit = "Unknown";
+	template<> static constexpr auto TimeTypeUnit< std::chrono::seconds> = "s";
+	template<> static constexpr auto TimeTypeUnit< std::chrono::milliseconds> = "ms";
+	template<> static constexpr auto TimeTypeUnit< std::chrono::microseconds> = "us";
+	template<> static constexpr auto TimeTypeUnit< std::chrono::nanoseconds> = "ns";
 
 	template<ChronoTimeType T = std::chrono::milliseconds>
 	class Timer final {
@@ -53,13 +48,11 @@ namespace Utils {
 			return duration.count();
 		}
 		void stop() {
-			if (!stopped) {
-				this->end = clock::now();
-				this->stopped = true;
-				
-				os << std::format("{}({}) ended!\n", name, id);
-				display();
-			}
+			if (stopped) return;
+			this->end = clock::now();
+			this->stopped = true;
+			os << std::format("{}({}) ended!\n", name, id);
+			display();
 		}
 
 		void display() const {
@@ -74,8 +67,8 @@ namespace Utils {
 			if (!stopped) stop();
 		}
 
-		friend std::ostream& operator<<(std::ostream& os, const Timer<T> timer) {
-			display(os);
+		friend std::ostream& operator<<(std::ostream& os, Timer<T> const& timer) {
+			timer.display(os);
 			return os;
 		}
 	private:

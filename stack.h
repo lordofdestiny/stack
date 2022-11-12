@@ -91,9 +91,10 @@ namespace ndb {
 			return emplace(value);
 		}
 
-		stack& push(ValueType&& value) noexcept(false) {
+		stack& push(RValueReference value) noexcept(false) {
 			return emplace(std::move(value));
 		}
+
 		bool empty() const {
 			return _data == nullptr;
 		}
