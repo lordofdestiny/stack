@@ -75,12 +75,6 @@ namespace ndb {
 			return *this;
 		};
 
-		ValueType take() noexcept(false) {
-			ValueType tmp = std::move(_data->value);
-			pop();
-			return tmp;
-		}
-
 		ConstReference top() const noexcept(false) {
 			if (empty()) {
 				throw ndb::stack_empty_error("Error while checking the top of an empty stack!");
