@@ -45,9 +45,6 @@ namespace ndb {
 		using NodeReference = NodeType&;
 	public:
 		stack() = default;
-		stack(std::initializer_list<ValueType> il) {
-			for (ConstReference i : il) emplace(i);
-		}
 		stack(stack const& other) :
 			_size(other._size),
 			_data(other.copyResources()) {};
